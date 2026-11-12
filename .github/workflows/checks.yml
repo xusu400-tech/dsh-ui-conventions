@@ -5,12 +5,14 @@
 #   - checks/test-reference-impl.mjs 从 conventions/boot.md 抽出参考实现再跑 14 个场景
 #
 # 第二个测试的存在意义：文档里的示例代码如果被改动而与语义脱节，这里会当场变红——
-# 即"公约文档与实现不漂移"是靠 CI 守住的，不是靠人记得。
+# 即“公约文档与实现不漂移”是靠 CI 守住的，不是靠人记得。
+#
+# 注意：YAML 的裸标量里不能出现「冒号+空格」。凡是名字里带冒号的，一律加引号——
+# 否则 GitHub 会判定工作流文件无效，运行直接失败且不创建任何 job（表现为 0 个 job）。
 name: checks
 
 on:
   push:
-    branches: ['**']
   pull_request:
   workflow_dispatch:
 
@@ -19,39 +21,41 @@ permissions:
 
 jobs:
   checks:
-    name: lint self-test + reference implementation
+    name: "lint self-test + reference implementation"
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout
+      - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: "Setup Node"
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
-      - name: Report environment
+      - name: "Report environment"
         run: |
           node --version
           git log --oneline -1
 
-      - name: Linter self-test (fixtures: good must be clean, bad must hit exact rules)
+      - name: "Linter self-test (good fixture must be clean, bad fixture must hit the exact rules)"
         run: node checks/self-test.mjs
 
-      - name: Reference implementation extracted from conventions/boot.md
+      - name: "Reference implementation extracted from conventions/boot.md"
         run: node checks/test-reference-impl.mjs
 
-      - name: Lint the good fixture (must exit 0)
+      - name: "Lint the good fixture and require exit code 0"
         run: node checks/dsh-ui-lint.mjs examples/good-plugin
 
-      - name: Lint the bad fixture (expected to fail; assert it reports the must rules)
+      - name: "Lint the bad fixture and require all five must rules to appear"
         run: |
-          set +e
-          node checks/dsh-ui-lint.mjs examples/bad-plugin --no-fail > /tmp/bad.txt 2>&1
-          set -e
-          cat /tmp/bad.txt
+          node checks/dsh-ui-lint.mjs examples/bad-plugin --no-fail | tee /tmp/bad.txt
+          missing=0
           for rule in MUST-boot-claim MUST-boot-cap MUST-namespace-own MUST-no-dsw-namespace MUST-no-host-marker-write; do
-            grep -q "$rule" /tmp/bad.txt || { echo "missing expected rule: $rule"; exit 1; }
+            if ! grep -q "$rule" /tmp/bad.txt; then
+              echo "::error::missing expected rule: $rule"
+              missing=1
+            fi
           done
+          if [ "$missing" -ne 0 ]; then exit 1; fi
           echo "bad fixture reported every expected must rule"
