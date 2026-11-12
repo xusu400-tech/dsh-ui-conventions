@@ -1,0 +1,57 @@
+# 仓库端自动化测试：检查器自测 + 公约参考实现测试。
+#
+# 两条测试都是离线、无密钥的：
+#   - checks/self-test.mjs           用夹具验证检查器（合规包不得报错；违规包必须精确命中预期规则）
+#   - checks/test-reference-impl.mjs 从 conventions/boot.md 抽出参考实现再跑 14 个场景
+#
+# 第二个测试的存在意义：文档里的示例代码如果被改动而与语义脱节，这里会当场变红——
+# 即"公约文档与实现不漂移"是靠 CI 守住的，不是靠人记得。
+name: checks
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: lint self-test + reference implementation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Report environment
+        run: |
+          node --version
+          git log --oneline -1
+
+      - name: Linter self-test (fixtures: good must be clean, bad must hit exact rules)
+        run: node checks/self-test.mjs
+
+      - name: Reference implementation extracted from conventions/boot.md
+        run: node checks/test-reference-impl.mjs
+
+      - name: Lint the good fixture (must exit 0)
+        run: node checks/dsh-ui-lint.mjs examples/good-plugin
+
+      - name: Lint the bad fixture (expected to fail; assert it reports the must rules)
+        run: |
+          set +e
+          node checks/dsh-ui-lint.mjs examples/bad-plugin --no-fail > /tmp/bad.txt 2>&1
+          set -e
+          cat /tmp/bad.txt
+          for rule in MUST-boot-claim MUST-boot-cap MUST-namespace-own MUST-no-dsw-namespace MUST-no-host-marker-write; do
+            grep -q "$rule" /tmp/bad.txt || { echo "missing expected rule: $rule"; exit 1; }
+          done
+          echo "bad fixture reported every expected must rule"
