@@ -30,7 +30,7 @@ console.log('\n=== good-plugin 不应有"必须"级违规 ===')
 const good = lintPackage(join(ROOT, 'examples', 'good-plugin'))
 const goodMust = mustRules(good)
 check('无 must 违规', goodMust.length === 0, `实际：${goodMust.join(', ')}`)
-check('参与首屏协调（出现 __DSH_BOOT__）', good.findings.every(f => f.rule !== 'MUST-boot-claim'))
+check('参与首屏协调（出现 __DSH_UI_BOOT__）', good.findings.every(f => f.rule !== 'MUST-boot-claim'))
 check('未被判为未文档化锚点之外的噪声', !good.findings.some(f => f.rule === 'MUST-no-dsw-namespace'))
 console.log(`   （good-plugin 全部发现：${good.findings.map(f => f.rule).join(', ') || '无'}）`)
 
@@ -42,6 +42,7 @@ const EXPECTED = [
   'MUST-boot-claim',
   'MUST-namespace-own',
   'MUST-no-dsw-namespace',
+  'MUST-no-host-global-clobber',
   'MUST-no-host-marker-write',
 ].sort()
 check('must 规则集合完全一致', JSON.stringify(badMust) === JSON.stringify(EXPECTED),
