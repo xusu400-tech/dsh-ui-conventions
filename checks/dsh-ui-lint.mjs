@@ -244,7 +244,7 @@ export function lintPackage(pkgDir) {
   }
 
   // ── 首屏协调按"包"判定：覆盖层可能定义在 .css 里，而协调代码在 .js 里 ──
-  const pkgParticipates = /__DSH_BOOT__/.test(allCode) || /dsh:boot-(claim|release)/.test(allCode)
+  const pkgParticipates = /__DSH_UI_BOOT__/.test(allCode) || /dsh-ui-boot:(claim|release)/.test(allCode)
   const pkgHasCap = /maxMs/.test(allCode)
   /* 统一字段名：只要出现其中两个以上，就认为按公约命名了（插件里的写法可能是 bootCfg.maxMs / C.boot.maxMs） */
   const namingHits = ['priority', 'maxMs', 'waitCapMs', 'graceMs']
@@ -252,6 +252,21 @@ export function lintPackage(pkgDir) {
 
   for (const src of sources) {
     const code = stripComments(src.text, src.isCss)
+
+    // ── MUST-no-host-global-clobber：不得改写宿主自有的 window 全局 ──────
+    for (const name of (REGISTRY.hostGlobals ?? [])) {
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const assign = new RegExp(`(?:window|globalThis|global|W)\\s*\\.\\s*${escaped}\\s*=(?!=)`, 'g')
+      for (const m of code.matchAll(assign)) {
+        add('MUST-no-host-global-clobber', 'must',
+          `改写了宿主全局对象 ${name}（宿主用它携带启动清单，覆盖会导致启动失败）`, src.rel, lineOf(code, m.index))
+      }
+      const bracket = new RegExp(`\\[\\s*['"]${escaped}['"]\\s*\\]\\s*=(?!=)`, 'g')
+      for (const m of code.matchAll(bracket)) {
+        add('MUST-no-host-global-clobber', 'must',
+          `改写了宿主全局对象 ${name}[...]`, src.rel, lineOf(code, m.index))
+      }
+    }
 
     // ── MUST-no-dsw-namespace：只禁止"全局"覆盖宿主 token ────────────
     for (const m of code.matchAll(/setProperty\(\s*['"](--dsw-[a-z0-9-]+)['"]/g)) {
@@ -308,7 +323,7 @@ export function lintPackage(pkgDir) {
     // ── 首屏相关 ─────────────────────────────────────────────────────
     if (looksLikeFullscreenOverlay(code)) {
       if (!pkgParticipates) {
-        add('MUST-boot-claim', 'must', '存在全屏覆盖层但未参与首屏协调（缺 __DSH_BOOT__ / dsh:boot-*）', src.rel)
+        add('MUST-boot-claim', 'must', '存在全屏覆盖层但未参与首屏协调（缺 __DSH_UI_BOOT__ / dsh-ui-boot:*）', src.rel)
       }
       if (!pkgHasCap) {
         add('MUST-boot-cap', 'must', '存在全屏覆盖层但没有硬上限（缺 maxMs）', src.rel)
