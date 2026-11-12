@@ -47,11 +47,11 @@ jobs:
       - name: "Lint the good fixture and require exit code 0"
         run: node checks/dsh-ui-lint.mjs examples/good-plugin
 
-      - name: "Lint the bad fixture and require all five must rules to appear"
+      - name: "Lint the bad fixture and require all six must rules to appear"
         run: |
           node checks/dsh-ui-lint.mjs examples/bad-plugin --no-fail | tee /tmp/bad.txt
           missing=0
-          for rule in MUST-boot-claim MUST-boot-cap MUST-namespace-own MUST-no-dsw-namespace MUST-no-host-marker-write; do
+          for rule in MUST-boot-claim MUST-boot-cap MUST-namespace-own MUST-no-dsw-namespace MUST-no-host-marker-write MUST-no-host-global-clobber; do
             if ! grep -q "$rule" /tmp/bad.txt; then
               echo "::error::missing expected rule: $rule"
               missing=1
