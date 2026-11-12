@@ -30,25 +30,41 @@ status: draft
 
 | 载体 | 谁写 | 谁读 | 说明 |
 |---|---|---|---|
-| `window.__DSH_BOOT__` | 占用者写（认领/释放） | 所有人 | 快照：`{ v: 1, owner, priority, since, maxMs }`；空闲时 `owner: null` |
-| `html[data-dsh-boot]` / `[data-dsh-boot-since]` | 占用者 | 不读 JS 的消费者、排障 | 与快照同步投影；空闲时移除 |
-| 事件 `dsh:boot-claim` | 占用者 | 等待者 | `detail: { id, priority, maxMs }` |
-| 事件 `dsh:boot-release` | 占用者 | 等待者 | `detail: { id, reason }`，`reason ∈ ended/skipped/failed/timeout/disabled` |
+| `window.__DSH_UI_BOOT__` | 占用者写（认领/释放） | 所有人 | 快照：`{ v: 1, owner, priority, since, maxMs }`；空闲时 `owner: null` |
+| `html[data-dsh-ui-boot]` / `[data-dsh-ui-boot-since]` | 占用者 | 不读 JS 的消费者、排障 | 与快照同步投影；空闲时移除 |
+| 事件 `dsh-ui-boot:claim` | 占用者 | 等待者 | `detail: { id, priority, maxMs }` |
+| 事件 `dsh-ui-boot:release` | 占用者 | 等待者 | `detail: { id, reason }`，`reason ∈ ended/skipped/failed/timeout/disabled` |
 
 **只写自己的命名空间**：任何插件只允许把 `owner` 写成自己的 id，且只在"当前空闲"时写。
 禁止改写他人的值、禁止删除他人写的属性。
+
+### 名字为什么是 `__DSH_UI_BOOT__` 而不是 `__DSH_BOOT__`（必读）
+
+`window.__DSH_BOOT__` **是宿主的**：它携带客户端模块启动清单（`rev` / `release` / `entries` / `batches`）。
+本公约第一版误用了这个名字，`claim()` 覆盖它之后宿主解析清单失败，**DSH 直接启动失败**：
+
+```
+Error: client-modules: boot manifest rev must be a string
+```
+
+完整记录见 [案例](../cases/boot-global-collision.md)。同一个坑还有 `data-dsh-boot`
+（宿主 `dsh-client-ui-renderer` 用它标首帧 hydrate 的占位元素），所以 DOM 标记也必须是 `data-dsh-ui-boot`。
+
+**规则**：`__DSH_*` 前缀默认属于宿主。采纳任何该前缀的名字之前，必须在**运行中安装包的 asar 内**
+核实它没有被占用（扫描方法见案例文档），并把"实测版本 + 日期"记在这里。
+`__DSH_UI_BOOT__` 的核实结果：DSH Desktop `0.2.2-rc.2` / 2026-11-12，**未占用**。
 
 ## 3. 条目
 
 ### 3.1 播放前必须认领（必须）
 
-**约定**：插入全屏覆盖层之前，先确认 `__DSH_BOOT__.owner` 为空（或就是自己），再写入自己的 id。
+**约定**：插入全屏覆盖层之前，先确认 `__DSH_UI_BOOT__.owner` 为空（或就是自己），再写入自己的 id。
 
 **为什么**：不认领就是"抢屏"——两个插件同时挂全屏层，用户看到的是随机叠层与重叠音频。
 
 **怎么验**：同装两个首屏插件，只应有一个在播。规则 id：`MUST-boot-claim`。
 
-**失效时**：若读不到 `__DSH_BOOT__`（宿主/浏览器限制），退化为"宽限探测"（见 3.7），不得直接抢。
+**失效时**：若读不到 `__DSH_UI_BOOT__`（宿主/浏览器限制），退化为"宽限探测"（见 3.7），不得直接抢。
 
 ### 3.2 必须在**开始淡出**时释放（必须）
 
@@ -103,7 +119,7 @@ status: draft
 
 ### 3.7 宽限探测，兼容不遵守公约的插件（必须）
 
-**约定**：启动时若没有 `__DSH_BOOT__`，先等 `graceMs`（建议 4000）。期间有人认领 → 正常等待；
+**约定**：启动时若没有 `__DSH_UI_BOOT__`，先等 `graceMs`（建议 4000）。期间有人认领 → 正常等待；
 始终没人认领 → 认为无人在台上，照常开播。
 
 **为什么**：公约是自愿的。如果等待"永远等不到"，遵守者会被不遵守者拖死——那没人愿意遵守。
@@ -211,18 +227,18 @@ function createBootCoordination(options) {
   var slackMs = 2000
 
   function snapshot() {
-    try { return window.__DSH_BOOT__ && window.__DSH_BOOT__.v === 1 ? window.__DSH_BOOT__ : null } catch (e) { return null }
+    try { return window.__DSH_UI_BOOT__ && window.__DSH_UI_BOOT__.v === 1 ? window.__DSH_UI_BOOT__ : null } catch (e) { return null }
   }
   function write(state) {
     try {
-      window.__DSH_BOOT__ = state
+      window.__DSH_UI_BOOT__ = state
       var root = document.documentElement
       if (state && state.owner) {
-        root.setAttribute('data-dsh-boot', state.owner)
-        root.setAttribute('data-dsh-boot-since', String(state.since))
+        root.setAttribute('data-dsh-ui-boot', state.owner)
+        root.setAttribute('data-dsh-ui-boot-since', String(state.since))
       } else {
-        root.removeAttribute('data-dsh-boot')
-        root.removeAttribute('data-dsh-boot-since')
+        root.removeAttribute('data-dsh-ui-boot')
+        root.removeAttribute('data-dsh-ui-boot-since')
       }
     } catch (e) { /* 标记失败不影响播放 */ }
   }
@@ -230,23 +246,23 @@ function createBootCoordination(options) {
     var now = Date.now()
     var next = { v: 1, owner: id, priority: priority, since: now, maxMs: maxMs }
     write(next)
-    try { window.dispatchEvent(new CustomEvent('dsh:boot-claim', { detail: { id: id, priority: priority, maxMs: maxMs } })) } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent('dsh-ui-boot:claim', { detail: { id: id, priority: priority, maxMs: maxMs } })) } catch (e) {}
     return next
   }
   function release(reason) {
     var cur = snapshot()
     if (!cur || cur.owner !== id) return false            /* 幂等：不是我台上就什么都不做 */
     write({ v: 1, owner: null, priority: null, since: null, maxMs: null })
-    try { window.dispatchEvent(new CustomEvent('dsh:boot-release', { detail: { id: id, reason: reason || 'ended' } })) } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent('dsh-ui-boot:release', { detail: { id: id, reason: reason || 'ended' } })) } catch (e) {}
     return true
   }
   /** 空闲（或我该接棒）时回调 onGo；本函数保证只回调一次。 */
   function whenFree(onGo) {
     var startedAt = Date.now()
     var done = false
-    function go(why) { if (done) return; done = true; try { window.removeEventListener('dsh:boot-release', onRelease) } catch (e) {} onGo(why) }
+    function go(why) { if (done) return; done = true; try { window.removeEventListener('dsh-ui-boot:release', onRelease) } catch (e) {} onGo(why) }
     function onRelease() { go('release') }
-    try { window.addEventListener('dsh:boot-release', onRelease) } catch (e) {}
+    try { window.addEventListener('dsh-ui-boot:release', onRelease) } catch (e) {}
     var timer = setInterval(function () {
       var s = snapshot()
       var now = Date.now()
@@ -257,7 +273,7 @@ function createBootCoordination(options) {
     }, 120)
     /* 宽限期：没有任何人认领就当作自由，兼容未遵守公约的插件 */
     setTimeout(function () { if (!snapshot()) go('grace-expired') }, graceMs)
-    return function cancel() { clearInterval(timer); try { window.removeEventListener('dsh:boot-release', onRelease) } catch (e) {} }
+    return function cancel() { clearInterval(timer); try { window.removeEventListener('dsh-ui-boot:release', onRelease) } catch (e) {} }
   }
   return { claim: claim, release: release, whenFree: whenFree, snapshot: snapshot }
 }
@@ -295,13 +311,13 @@ boot.whenFree(function (why) {
 
 | 旧做法 | 迁移到 | 说明 |
 |---|---|---|
-| 私有全局状态（如 `__DSVS_BOOT_STATE__`） | `__DSH_BOOT__` 快照 | 双写一段时间 |
-| 私有事件（如 `dsvs:boot-exit`） | `dsh:boot-release`（带 `reason`） | 双发一段时间 |
+| 私有全局状态（如 `__DSVS_BOOT_STATE__`） | `__DSH_UI_BOOT__` 快照 | 双写一段时间 |
+| 私有事件（如 `dsvs:boot-exit`） | `dsh-ui-boot:release`（带 `reason`） | 双发一段时间 |
 | 代码里的固定 4s/120s 常量 | `boot.graceMs` / `boot.waitCapMs` | 常量改成读配置，默认值不变 |
 | 无（直接抢屏） | 认领/释放 | 先加认领与释放，其余保持 |
 
 **回退**：若宿主日后提供了正式 API（例如 `ctx.boot.register(...)`），把认领/释放替换为宿主调用，
-保留 `__DSH_BOOT__` 的写入作为 legacy 适配层，直到所有插件迁移完成。
+保留 `__DSH_UI_BOOT__` 的写入作为 legacy 适配层，直到所有插件迁移完成。
 
 ## 9. 交叉引用
 
