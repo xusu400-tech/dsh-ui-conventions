@@ -1,0 +1,83 @@
+{
+  "_note": "已知标记归属登记表。实测于 DSH 0.2.2-rc.2 / 2026-11-12，扫描本机 profile 已安装插件与安装包 asar。出处见 ../SOURCES.md。新增条目请附实测证据。",
+  "_schema": {
+    "hostInternal": "宿主内部标记，任何插件不得写入",
+    "ownershipMarker": "所有权标记：允许在『自己创建的节点』上写一次；不得改写/删除已有的值",
+    "hostPublishedReadOnly": "宿主发布、插件只读的标记（⚠ 未文档化）",
+    "shared": "本公约定义的跨插件共享标记（data-dsh-<module>）",
+    "thirdParty": "第三方私有命名空间：prefix → 拥有者",
+    "bareNamesSeenInTheWild": "生态中已被占用的裸名（无前缀），新插件不应使用"
+  },
+  "hostInternal": [
+    "data-dsh-compact-toolbar",
+    "data-dsh-compact-valid"
+  ],
+  "ownershipMarker": [
+    "data-plugin",
+    "data-plugin-css"
+  ],
+  "hostPublishedReadOnly": [
+    "data-ds-theme-source",
+    "data-chat-anchor-key",
+    "data-chat-node-key",
+    "data-chat-group-key",
+    "data-chat-motion",
+    "data-sidebar-right-session",
+    "data-sidebar-right-occurrence",
+    "data-sidebar-right-flash",
+    "data-sidebar-browser-frame",
+    "data-clipped",
+    "data-scrolled",
+    "data-composer-input",
+    "data-input-fold"
+  ],
+  "shared": [
+    "data-dsh-boot",
+    "data-dsh-boot-since",
+    "data-dsh-background",
+    "data-dsh-sidebar",
+    "data-dsh-composer",
+    "data-dsh-theme",
+    "data-dsh-chrome",
+    "data-dsh-no-drag"
+  ],
+  "thirdParty": {
+    "dsvs": "dsh-video-skin",
+    "we": "dsh-wallpaper-engine",
+    "maid": "@smalltailqwq/dsh-client-ui-skin-maid-atelier",
+    "pw": "(unknown)",
+    "ds": "(unknown)"
+  },
+  "bareNamesSeenInTheWild": [
+    "data-phase",
+    "data-row",
+    "data-tab",
+    "data-act",
+    "data-armed",
+    "data-msg",
+    "data-num",
+    "data-on",
+    "data-ok",
+    "data-title",
+    "data-ts",
+    "data-urgency",
+    "data-stck",
+    "data-hear",
+    "data-error",
+    "data-blob-url",
+    "data-dgst",
+    "data-platform",
+    "data-precedence",
+    "data-slot",
+    "data-skin-owner",
+    "data-skin-chrome",
+    "data-skin-corner",
+    "data-skin-trim-layer",
+    "data-composer-card",
+    "data-sidebar-collapsed",
+    "data-cordis-badge",
+    "data-conversation-scroll",
+    "data-window-drag",
+    "data-plugin-header-part"
+  ]
+}

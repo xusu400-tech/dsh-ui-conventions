@@ -1,0 +1,17 @@
+{
+  "name": "dsh-good-boot-plugin",
+  "version": "0.1.0",
+  "description": "合规样例：一个走首屏公约的开机动画插件（用于检查器自测）",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": { "platform": "web", "inject": [] }
+  }
+}

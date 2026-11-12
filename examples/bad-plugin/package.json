@@ -1,0 +1,17 @@
+{
+  "name": "dsh-bad-plugin",
+  "version": "0.1.0",
+  "description": "违规样例：故意违反公约的多个条目，用于检查器自测（不要照抄）",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": { "platform": "web", "inject": [] }
+  }
+}

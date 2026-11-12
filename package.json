@@ -1,0 +1,41 @@
+{
+  "name": "dsh-ui-conventions",
+  "version": "0.1.0",
+  "description": "DSH Desktop/Web 插件 UI 公约 + 可执行的合规检查器（首屏、背景、主题、侧栏、输入区、设置插槽、窗口拖拽、浮层）",
+  "type": "module",
+  "license": "MIT",
+  "private": false,
+  "bin": {
+    "dsh-ui-lint": "./checks/dsh-ui-lint.mjs"
+  },
+  "scripts": {
+    "test": "node checks/self-test.mjs && node checks/test-reference-impl.mjs",
+    "lint:good": "node checks/dsh-ui-lint.mjs examples/good-plugin",
+    "lint:bad": "node checks/dsh-ui-lint.mjs examples/bad-plugin --no-fail"
+  },
+  "files": [
+    "checks",
+    "conventions",
+    "templates",
+    "examples",
+    "README.md",
+    "VERSIONING.md",
+    "SOURCES.md",
+    "MACHINE-CHECKABLE.md",
+    "ROADMAP.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "convention",
+    "lint",
+    "ui"
+  ]
+}
