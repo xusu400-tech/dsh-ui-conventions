@@ -26,10 +26,11 @@ node checks/dsh-ui-lint.mjs "C:\Users\<user>\.dsh\profiles\desktop\node_modules"
 |---|---|---|---|
 | `MUST-client-manifest` | 必须 | 声明 `dsh.client` 时必须有 `platform`、导出 `./client` 且文件存在 | [anchors](./conventions/anchors.md) |
 | `MUST-no-dsw-namespace` | 必须 | 客户端代码不得写/覆盖 `--dsw-*` 自定义属性 | [theme](./conventions/theme.md) |
+| `MUST-no-host-global-clobber` | 必须 | 不得改写宿主自有的全局对象（登记表 `hostGlobals`，目前含 `__DSH_BOOT__`）；覆盖会让宿主启动失败 | [anchors](./conventions/anchors.md) |
 | `MUST-no-host-marker-write` | 必须 | 不得写宿主内部标记（`data-dsh-compact-toolbar`、`data-dsh-compact-valid`），也不得删除/改写 `data-plugin`、`data-plugin-css` 等所有权标记 | [anchors](./conventions/anchors.md) |
 | `MUST-namespace-own` | 必须 | 写 `data-*` 时不得占用**已知属于其他插件**的命名空间 | [anchors](./conventions/anchors.md) |
-| `MUST-boot-claim` | 必须 | 创建全屏 `position:fixed` 覆盖层时，必须参与首屏协调（引用 `__DSH_BOOT__` 或 `dsh:boot-*`） | [boot](./conventions/boot.md) |
-| `MUST-boot-cap` | 必须 | 有首屏覆盖层时，必须有硬上限（自设上限常量或走 `__DSH_BOOT__` 的 `maxMs`） | [boot](./conventions/boot.md) |
+| `MUST-boot-claim` | 必须 | 创建全屏 `position:fixed` 覆盖层时，必须参与首屏协调（引用 `__DSH_UI_BOOT__` 或 `dsh:boot-*`） | [boot](./conventions/boot.md) |
+| `MUST-boot-cap` | 必须 | 有首屏覆盖层时，必须有硬上限（自设上限常量或走 `__DSH_UI_BOOT__` 的 `maxMs`） | [boot](./conventions/boot.md) |
 | `SHOULD-plugin-anchor` | 建议 | 全屏/常驻根元素应写 `data-plugin="<包名>"` | [anchors](./conventions/anchors.md) |
 | `SHOULD-skip` | 建议 | 全屏覆盖层应提供跳过入口（点击/按键） | [boot](./conventions/boot.md) |
 | `SHOULD-config-naming` | 建议 | 首屏相关配置宜用统一字段名（`boot.priority` / `maxMs` / `waitCapMs` / `graceMs`） | [boot](./conventions/boot.md) |
@@ -41,7 +42,7 @@ node checks/dsh-ui-lint.mjs "C:\Users\<user>\.dsh\profiles\desktop\node_modules"
 
 它做的是**静态源码扫描**，所以：
 
-- **注释会被剔除后再判定**（长度保持，行号仍准确）。否则"注释里写着 `__DSH_BOOT__`/`maxMs`"会骗过检查——
+- **注释会被剔除后再判定**（长度保持，行号仍准确）。否则"注释里写着 `__DSH_UI_BOOT__`/`maxMs`"会骗过检查——
   这个坑是本仓库自测夹具抓出来的（见 `CHANGELOG.md`）。已知边界：不识别正则字面量里的 `//`。
 - **只扫描会进入 DSH 页面的运行时代码**：从 `exports["./client"]`/`main` 出发，跟随相对 import 与"指向包内真实文件的路径字符串"，排除 `test*/scripts/tools/docs/templates/preview/examples`。测试与构建工具里的写法不算违规。
 - 只认文本里出现的写法。把关键逻辑藏进动态拼接、或运行时才决定的标记，检查器不会发现——
@@ -58,4 +59,4 @@ node checks/dsh-ui-lint.mjs "C:\Users\<user>\.dsh\profiles\desktop\node_modules"
 node checks/self-test.mjs
 ```
 
-`examples/good-plugin` 应按预期通过（无必须级违规），`examples/bad-plugin` 必须精确触发规则集里列出的那些 id——这是本仓库的 CI 门槛。
+`examples/good-plugin` 应按预期通过（无必须级违规），`examples/bad-plugin` 必须精确触发规则集里列出的那些 id（当前 6 条 must）——这是本仓库的 CI 门槛。
