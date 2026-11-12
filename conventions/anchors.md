@@ -131,7 +131,7 @@ if (!el) return downgrade('composer-anchor-missing')                  // 降级�
 
 | 锚点 | 写方 | 读方（实测） | 模块 |
 |---|---|---|---|
-| `data-dsh-boot` | 首屏占用者 | 等待中的首屏插件 | [boot](./boot.md) |
+| `data-dsh-ui-boot` | 首屏占用者 | 等待中的首屏插件 | [boot](./boot.md) |
 | `data-we-wallpaper` | `dsh-wallpaper-engine` | `dsh-video-skin` | [background](./background.md) |
 | `data-dsvs-background` | `dsh-video-skin` | 任意（对外只读） | [background](./background.md) |
 
@@ -191,6 +191,6 @@ function resolveHostAnchor(pkg, semantics) {
 
 ## 10. 交叉引用
 
-- [boot.md](./boot.md) — `data-dsh-boot` 的语义
+- [boot.md](./boot.md) — `data-dsh-ui-boot` 的语义
 - [background.md](./background.md) — `data-we-wallpaper` / `data-dsvs-background`
 - 官方：`docs/subsystems/client-modules.md`、`docs/subsystems/slots.md`
