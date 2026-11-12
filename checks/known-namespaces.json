@@ -12,6 +12,10 @@
     "data-dsh-compact-toolbar",
     "data-dsh-compact-valid"
   ],
+  "hostGlobals": [
+    "__DSH_BOOT__"
+  ],
+  "_hostGlobalsNote": "宿主自有的 window 全局对象，插件改写会导致宿主启动失败。__DSH_BOOT__ 携带客户端模块启动清单（rev/release/entries/batches），覆盖后宿主解析时报 boot manifest rev must be a string（2026-11-12 本仓库实测事故，见 ../cases/boot-global-collision.md）。新增前必须先用 checks 里的方法在运行中的应用里核实占用情况。",
   "ownershipMarker": [
     "data-plugin",
     "data-plugin-css"
@@ -32,8 +36,8 @@
     "data-input-fold"
   ],
   "shared": [
-    "data-dsh-boot",
-    "data-dsh-boot-since",
+    "data-dsh-ui-boot",
+    "data-dsh-ui-boot-since",
     "data-dsh-background",
     "data-dsh-sidebar",
     "data-dsh-composer",
