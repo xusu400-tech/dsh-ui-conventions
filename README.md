@@ -1,5 +1,7 @@
 # DSH UI 插件公约（DSH UI Plugin Conventions）
 
+[![checks](https://github.com/xusu400-tech/dsh-ui-conventions/actions/workflows/checks.yml/badge.svg)](https://github.com/xusu400-tech/dsh-ui-conventions/actions/workflows/checks.yml)
+
 > 面向**改造 DeepSeek Harness 桌面端 / 网页外观与交互**的第三方插件的一份**自愿**约定集。
 > 目标：同一类插件同时安装时**互相不打架**，并且把"事实标准"从"各人猜"变成"有据可查"。
 >
