@@ -51,7 +51,7 @@
 4. 播放者必须自设硬上限、可跳过、失败/超时都要释放（**绝不黑屏**）；
 5. 等待者宽限 `graceMs` 探测（兼容不遵守公约的插件）、等待上限 `waitCapMs`、台上者僵死时接棒。
 
-统一载体：`window.__DSH_BOOT__` + `html[data-dsh-boot]` + 事件 `dsh:boot-claim` / `dsh:boot-release`。
+统一载体：`window.__DSH_UI_BOOT__` + `html[data-dsh-ui-boot]` + 事件 `dsh-ui-boot:claim` / `dsh-ui-boot:release`。
 
 ## 当时的合规检查结果
 
@@ -92,7 +92,7 @@ dsh-boot-suite@2.16.13      必须级 11 条
 
 `MUST-boot-claim` / `MUST-boot-cap` 在两个插件上**均已清零**——即首屏冲突从此案角度看已解决。
 
-**如果插件升到更高版本**：先看它是否已内建首屏协调（搜索 `__DSH_BOOT__`）；再重跑检查器。
+**如果插件升到更高版本**：先看它是否已内建首屏协调（搜索 `__DSH_UI_BOOT__`）；再重跑检查器。
 两个插件若已按公约实现，本案例现象应消失，`MUST-boot-claim` / `MUST-boot-cap` 也应保持为零。
 若上游合并后自行改动了实现细节，请以**它们发布版本的实际代码**为准更新本案例的对照表。
 
