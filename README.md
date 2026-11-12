@@ -51,10 +51,10 @@
 | 用途 | 规则 | 说明 |
 |---|---|---|
 | 官方组件归属锚点 | `data-plugin="<npm 包名>"`、`data-plugin-css="<npm 包名>"` | ⚠ 官方 53 个 `dsh-client-ui-*` 包在写、第三方在读，但**未文档化**。详见 [anchors.md](./conventions/anchors.md) |
-| 跨插件共享状态 | `data-dsh-<module>-*` | 例：`data-dsh-boot`、`data-dsh-background` |
+| 跨插件共享状态 | `data-dsh-<module>-*` | 例：`data-dsh-ui-boot`、`data-dsh-background` |
 | 插件私有状态 | `data-<plugin>-*` | 例：`data-maid-*`、`data-dsvs-*`。私有标记**不承诺**他人可用 |
-| 事件 | `dsh:<module>-<verb>` | 例：`dsh:boot-release` |
-| 全局对象 | `__DSH_<MODULE>__` | 例：`__DSH_BOOT__`（全大写模块名） |
+| 事件 | `dsh:<module>-<verb>` | 例：`dsh-ui-boot:release` |
+| 全局对象 | `__DSH_<MODULE>__` | 例：`__DSH_UI_BOOT__`（全大写模块名）。**⚠ `__DSH_*` 前缀默认属于宿主**：采纳前必须在运行中安装包的 asar 内核实未被占用，否则可能让 DSH 启动失败（见 [案例](./cases/boot-global-collision.md)） |
 | CSS 变量 | 只读宿主 `--dsw-*`；自定义变量用 `--<plugin>-*` | **不得**定义或覆盖 `--dsw-*` 命名空间 |
 | 插件身份 | npm 包名 | `data-plugin` 的值、事件 `detail.id`、注册 id 一律用包名 |
 
