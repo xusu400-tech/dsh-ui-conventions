@@ -77,7 +77,23 @@ foreach ($b in $tree.tree | Where-Object type -eq 'blob') {
 
 本仓库 2026-11-12 实测：**33/33 个 blob 完全一致**，差异只在提交历史形状。
 
-## 建议的 CI
+## CI（已启用）
 
-仓库自带两条门槛，可直接放进 GitHub Actions（`node checks/self-test.mjs`、
-`node checks/test-reference-impl.mjs`），无外部依赖、无密钥需求。
+`.github/workflows/checks.yml` 在每次 push / PR 上跑四条断言（全程离线、无密钥）：
+
+1. `checks/self-test.mjs` —— 检查器自测（合规夹具必须干净，违规夹具必须**精确命中**预期规则）；
+2. `checks/test-reference-impl.mjs` —— 从 `conventions/boot.md` 抽出参考实现跑 14 个场景；
+3. `checks/dsh-ui-lint.mjs examples/good-plugin` —— 合规夹具必须退出码 0；
+4. 对违规夹具断言五条 must 规则都出现（避免"检查器变哑"却仍然绿）。
+
+它的真正作用：**公约文档里的示例代码与实现不允许漂移**。谁改了 `boot.md` 的代码块而没同步语义，CI 当场变红。
+本机手动复跑同一组断言：
+
+```powershell
+node checks/self-test.mjs
+node checks/test-reference-impl.mjs
+node checks/dsh-ui-lint.mjs examples/good-plugin
+node checks/dsh-ui-lint.mjs examples/bad-plugin --no-fail
+```
+
+
