@@ -2,7 +2,7 @@
  * 合规样例（good-plugin）：按 DSH 首屏公约 v1 实现一个开机动画。
  *
  * 满足检查器与公约要求的关键点：
- *  - 认领 / 释放（__DSH_BOOT__ + dsh:boot-claim / dsh:boot-release）
+ *  - 认领 / 释放（__DSH_UI_BOOT__ + dsh-ui-boot:claim / dsh-ui-boot:release）
  *  - 硬上限 maxMs、宽限 graceMs、等待上限 waitCapMs
  *  - 可跳过（click / keydown），失败与超时都释放
  *  - 自己的根元素标 data-plugin（所有权标记），不写宿主内部标记
@@ -20,40 +20,40 @@ function createBootCoordination(options) {
   var slackMs = 2000
 
   function snapshot() {
-    try { return window.__DSH_BOOT__ && window.__DSH_BOOT__.v === 1 ? window.__DSH_BOOT__ : null } catch (e) { return null }
+    try { return window.__DSH_UI_BOOT__ && window.__DSH_UI_BOOT__.v === 1 ? window.__DSH_UI_BOOT__ : null } catch (e) { return null }
   }
   function write(state) {
     try {
-      window.__DSH_BOOT__ = state
+      window.__DSH_UI_BOOT__ = state
       var root = document.documentElement
       if (state && state.owner) {
-        root.setAttribute('data-dsh-boot', state.owner)
-        root.setAttribute('data-dsh-boot-since', String(state.since))
+        root.setAttribute('data-dsh-ui-boot', state.owner)
+        root.setAttribute('data-dsh-ui-boot-since', String(state.since))
       } else {
-        root.removeAttribute('data-dsh-boot')
-        root.removeAttribute('data-dsh-boot-since')
+        root.removeAttribute('data-dsh-ui-boot')
+        root.removeAttribute('data-dsh-ui-boot-since')
       }
     } catch (e) { /* 标记失败不影响播放 */ }
   }
   function claim() {
     var next = { v: 1, owner: id, priority: priority, since: Date.now(), maxMs: maxMs }
     write(next)
-    try { window.dispatchEvent(new CustomEvent('dsh:boot-claim', { detail: { id: id, priority: priority, maxMs: maxMs } })) } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent('dsh-ui-boot:claim', { detail: { id: id, priority: priority, maxMs: maxMs } })) } catch (e) {}
     return next
   }
   function release(reason) {
     var cur = snapshot()
     if (!cur || cur.owner !== id) return false
     write({ v: 1, owner: null, priority: null, since: null, maxMs: null })
-    try { window.dispatchEvent(new CustomEvent('dsh:boot-release', { detail: { id: id, reason: reason || 'ended' } })) } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent('dsh-ui-boot:release', { detail: { id: id, reason: reason || 'ended' } })) } catch (e) {}
     return true
   }
   function whenFree(onGo) {
     var startedAt = Date.now()
     var done = false
-    function go(why) { if (done) return; done = true; try { window.removeEventListener('dsh:boot-release', onRelease) } catch (e) {} onGo(why) }
+    function go(why) { if (done) return; done = true; try { window.removeEventListener('dsh-ui-boot:release', onRelease) } catch (e) {} onGo(why) }
     function onRelease() { go('release') }
-    try { window.addEventListener('dsh:boot-release', onRelease) } catch (e) {}
+    try { window.addEventListener('dsh-ui-boot:release', onRelease) } catch (e) {}
     var timer = setInterval(function () {
       var s = snapshot()
       if (!s || !s.owner) return go('free')
@@ -62,7 +62,7 @@ function createBootCoordination(options) {
       if (Date.now() - startedAt > waitCapMs) return go('wait-cap')
     }, 120)
     setTimeout(function () { if (!snapshot()) go('grace-expired') }, graceMs)
-    return function cancel() { clearInterval(timer); try { window.removeEventListener('dsh:boot-release', onRelease) } catch (e) {} }
+    return function cancel() { clearInterval(timer); try { window.removeEventListener('dsh-ui-boot:release', onRelease) } catch (e) {} }
   }
   return { claim: claim, release: release, whenFree: whenFree, snapshot: snapshot }
 }
