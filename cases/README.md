@@ -6,7 +6,7 @@
 
 | 案例 | 参与插件 | 资源 | 状态 |
 |---|---|---|---|
-| [首屏冲突：两个开机动画同时播放](./boot-video-skin-vs-boot-suite.md) | `dsh-video-skin@0.1.6` × `dsh-boot-suite@2.16.13` | 首屏（独占） | 已定位，公约 [boot](../conventions/boot.md) 覆盖 |
+| [首屏冲突：两个开机动画同时播放](./boot-video-skin-vs-boot-suite.md) | `dsh-video-skin@0.1.6` × `dsh-boot-suite@2.16.13` | 首屏（独占） | **已修复并端到端确认**（串行播放，无空窗），公约 [boot](../conventions/boot.md) 覆盖 |
 | [背景层争夺：两个插件都想当背景](./background-video-skin-vs-wallpaper-engine.md) | `dsh-video-skin@0.1.6` × `dsh-wallpaper-engine`（版本未记） | 局内背景层 | 由插件作者自行约定，本公约 [background](../conventions/background.md) 收编 |
 | [公约自己踩了宿主全局变量，导致启动失败](./boot-global-collision.md) | 本公约 boot v1 第一版 + 两个示例实现 | `window.__DSH_BOOT__`（宿主保留） | **已修复**：契约改名 + 新增检查规则 |
 
