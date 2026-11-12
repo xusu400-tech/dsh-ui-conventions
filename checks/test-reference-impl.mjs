@@ -28,7 +28,7 @@ writeFileSync(IMPL, code + '\nexport { createBootCoordination }\n', 'utf8')
 const listeners = new Map()
 const attrs = new Map()
 globalThis.window = {
-  __DSH_BOOT__: undefined,
+  __DSH_UI_BOOT__: undefined,
   dispatchEvent(event) { (listeners.get(event.type) || []).forEach(fn => fn(event)); return true },
   addEventListener(type, fn) { if (!listeners.has(type)) listeners.set(type, []); listeners.get(type).push(fn) },
   removeEventListener(type, fn) { const l = listeners.get(type) || []; const i = l.indexOf(fn); if (i >= 0) l.splice(i, 1) },
@@ -53,36 +53,36 @@ const check = (name, ok, extra = '') => {
 const sleep = (ms) => new Promise(r => setTimeout(r, ms))
 
 {
-  delete globalThis.window.__DSH_BOOT__
+  delete globalThis.window.__DSH_UI_BOOT__
   const a = createBootCoordination({ id: 'A', graceMs: 60, waitCapMs: 500 })
   const why = await new Promise(res => a.whenFree(res))
   check('宽限期内无人认领 -> 自行开播', why === 'grace-expired', `why=${why}`)
 }
 {
-  delete globalThis.window.__DSH_BOOT__
+  delete globalThis.window.__DSH_UI_BOOT__
   const a = createBootCoordination({ id: 'A', priority: 100, maxMs: 1000 })
   a.claim()
-  check('认领后快照 owner=A', window.__DSH_BOOT__.owner === 'A')
-  check('认领后 html[data-dsh-boot]=A', attrs.get('data-dsh-boot') === 'A')
+  check('认领后快照 owner=A', window.__DSH_UI_BOOT__.owner === 'A')
+  check('认领后 html[data-dsh-ui-boot]=A', attrs.get('data-dsh-ui-boot') === 'A')
   check('release 第一次返回 true', a.release('ended') === true)
   check('release 第二次返回 false（幂等）', a.release('ended') === false)
-  check('释放后 owner=null', window.__DSH_BOOT__.owner === null)
-  check('释放后属性被移除', !attrs.has('data-dsh-boot'))
+  check('释放后 owner=null', window.__DSH_UI_BOOT__.owner === null)
+  check('释放后属性被移除', !attrs.has('data-dsh-ui-boot'))
 }
 {
-  delete globalThis.window.__DSH_BOOT__
+  delete globalThis.window.__DSH_UI_BOOT__
   const a = createBootCoordination({ id: 'A', priority: 100, maxMs: 5000 })
   const b = createBootCoordination({ id: 'B', priority: 200, graceMs: 10000, waitCapMs: 5000 })
   a.claim()
   const bWhy = new Promise(res => b.whenFree(res))
   await sleep(150)
-  check('A 在播时 B 仍在等待', window.__DSH_BOOT__.owner === 'A')
+  check('A 在播时 B 仍在等待', window.__DSH_UI_BOOT__.owner === 'A')
   a.release('skipped')
   const why = await bWhy
   check("A 释放后 B 由 'release' 唤醒", why === 'release', `why=${why}`)
 }
 {
-  delete globalThis.window.__DSH_BOOT__
+  delete globalThis.window.__DSH_UI_BOOT__
   const a = createBootCoordination({ id: 'A', priority: 100, maxMs: 600000 })
   const b = createBootCoordination({ id: 'B', priority: 200, graceMs: 10000, waitCapMs: 250 })
   a.claim()
@@ -92,7 +92,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms))
   check('等待时长接近 waitCapMs', Date.now() - t0 >= 230 && Date.now() - t0 < 900, `${Date.now() - t0}ms`)
 }
 {
-  delete globalThis.window.__DSH_BOOT__
+  delete globalThis.window.__DSH_UI_BOOT__
   const a = createBootCoordination({ id: 'A', priority: 100, maxMs: 200 })
   const b = createBootCoordination({ id: 'B', priority: 200, graceMs: 10000, waitCapMs: 10000 })
   a.claim()
@@ -103,7 +103,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms))
   check('接棒发生在 maxMs+slack 之后', dt >= 2100 && dt < 3600, `${dt}ms`)
 }
 {
-  delete globalThis.window.__DSH_BOOT__
+  delete globalThis.window.__DSH_UI_BOOT__
   const a = createBootCoordination({ id: 'A' })
   a.claim()
   const why = await new Promise(res => a.whenFree(res))
