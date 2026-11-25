@@ -1,8 +1,8 @@
 ---
 module: boot
 convention: v1
-dsh-verified: 0.2.2-rc.2
-doc-revised: 2026-11-12
+dsh-verified: 0.2.2-rc.5
+doc-revised: 2026-11-25
 status: draft
 ---
 
@@ -52,7 +52,15 @@ Error: client-modules: boot manifest rev must be a string
 
 **规则**：`__DSH_*` 前缀默认属于宿主。采纳任何该前缀的名字之前，必须在**运行中安装包的 asar 内**
 核实它没有被占用（扫描方法见案例文档），并把"实测版本 + 日期"记在这里。
-`__DSH_UI_BOOT__` 的核实结果：DSH Desktop `0.2.2-rc.2` / 2026-11-12，**未占用**。
+
+`__DSH_UI_BOOT__` 的核实结果：
+
+| 日期 | DSH 版本 | `__DSH_BOOT__` | `data-dsh-boot` | `__DSH_UI_BOOT__` / `data-dsh-ui-boot` / `dsh-ui-boot:*` |
+|---|---|---|---|---|
+| 2026-11-12 | 0.2.2-rc.2 | 宿主占用（client-modules 等） | 宿主占用（renderer） | **未占用** |
+| 2026-11-25 | 0.2.2-rc.5 | 宿主占用（7 个文件） | 宿主占用（renderer） | **仍未占用** |
+
+即 0.2.2-rc.2 → rc.5 的升级**没有**改变这个结论：契约名不需要改。
 
 ## 3. 条目
 
