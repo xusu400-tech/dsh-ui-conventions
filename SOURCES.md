@@ -8,6 +8,18 @@
 - `measured` — 在本机实际扫描/运行得到的统计
 - `issue` — 上游 issue / PR 讨论
 
+## 复核记录
+
+结论会随版本过期，所以每次 DSH 升级后应重新核对**关键名字的占用情况**（那是契约能否成立的唯一前提）。
+
+| 日期 | DSH 版本 | 复核内容 | 结论 |
+|---|---|---|---|
+| 2026-11-12 | 0.2.2-rc.2 | 首次实测，本文其余结论均出自此日 | — |
+| 2026-11-25 | 0.2.2-rc.5 | 名字占用：`__DSH_BOOT__` 仍被宿主（`dsh-client-modules` 等 7 个文件）使用；`data-dsh-boot` 仍被 `dsh-client-ui-renderer` 使用；`__DSH_UI_BOOT__` / `data-dsh-ui-boot` / `dsh-ui-boot:claim` / `dsh-ui-boot:release` **仍全部空闲** | 契约名不需要改 |
+| 2026-11-25 | 0.2.2-rc.5 | 端到端：两个插件打完补丁后冷启动，`boot-suite` 诊断日志出现 `dsh-boot gate: waiting → release (release)`，且 `caption-probe` 里 `dshUiBoot=dsh-video-skin` | 串行仍生效 |
+
+复核方法见 [cases/boot-global-collision.md](./cases/boot-global-collision.md#怎么在采纳新名字前自检)。
+
 ## 官方契约面
 
 | 结论 | 类型 | 位置 | 版本/日期 |
